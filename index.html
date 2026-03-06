@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Weather Forecasting at Home - Sebastian Val</title>
+    <meta name="author" content="Sebastian Val">
+    <meta name="description" content="Open-Source Chemical Transport Modeling presentation for Applied Science track.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.min.css" id="theme">
+    
+    <!-- Code Syntax Highlighting Theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/monokai.min.css">
+
+    <!-- Custom Styles to make it "pop" -->
+    <style>
+        .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+            color: #42affa; /* Sky blue accent for weather theme */
+            text-transform: none;
+        }
+        .reveal a {
+            color: #ffaa00; /* Gold contrast for links */
+        }
+        .reveal a:hover {
+            color: #ffcc55;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+        }
+        .title-slide h2 {
+            font-size: 1.4em;
+            color: #e0e0e0;
+            margin-bottom: 40px;
+        }
+        .title-slide p {
+            font-size: 0.85em;
+            margin: 5px 0;
+        }
+        .reveal ul {
+            display: block;
+            margin-bottom: 20px;
+        }
+        .reveal li {
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+        .reveal pre {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+        }
+        .reveal code {
+            border-radius: 8px;
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+        .small-text {
+            font-size: 0.6em !important;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slide 1 -->
+            <section class="title-slide" data-transition="zoom">
+                <h1>Weather Forecasting at Home</h1>
+                <h2>Open-Source Chemical Transport Modeling</h2>
+                <p><strong>Speaker:</strong> Sebastian Val</p>
+                <p><strong>Track:</strong> Applied Science</p>
+                <p><strong>Topic:</strong> Weather Forecasting at Home</p>
+                <p><strong>Repo:</strong> <a href="https://github.com/sval-dev/wrf-docker" target="_blank">https://github.com/sval-dev/wrf-docker</a></p>
+            </section>
+
+            <!-- Slide 2 -->
+            <section>
+                <h2>Everyday encounters</h2>
+                <ul>
+                    <li class="fragment fade-up">How does the weather app on your phone know it’s going to rain at 3:00 PM?</li>
+                    <li class="fragment fade-up">How do environmental agencies predict wildfire smoke plumes days in advance?</li>
+                    <li class="fragment fade-up">How do air quality or pollen alerts get generated?</li>
+                    <li class="fragment fade-up">Massive open-source fluid dynamics and chemistry engines running on Linux clusters.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 3 -->
+            <section>
+                <h2 style="font-size: 1.5em;">What is a Chemical Transport Model (CTM)?</h2>
+                <ul>
+                    <li class="fragment fade-up">A CTM is a numerical simulation that predicts how gases and aerosols behave in the atmosphere.</li>
+                    <li class="fragment fade-up">It solves complex, non-linear equations for fluid motion, thermodynamics, and chemical kinetics.</li>
+                    <li class="fragment fade-up">This gives us information such as predicted temperature, relative humidity, dew point, and chance of percipitation (rain or snow).</li>
+                    <li class="fragment fade-up">Also allows us to forecast pollutants like ground-level Ozone (O3) and Fine / Coarse Particulate Matter (PM_2.5 / PM_10).</li>
+                </ul>
+            </section>
+
+            <!-- Slide 4 -->
+            <section>
+                <h2>The Open-Source Science Ecosystem</h2>
+                <ul>
+                    <li class="fragment fade-up">Atmospheric modeling is heavily reliant on open-source software (OSS) and Linux.</li>
+                    <li class="fragment fade-up">The majority of modern numerical weather prediction (NWP) models are built using Fortran and C.</li>
+                    <li class="fragment fade-up">They are designed explicitly to be compiled and executed on Linux-based High-Performance Computing (HPC) systems.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 5 -->
+            <section>
+                <h2>The "Dependency Hell" Problem</h2>
+                <ul>
+                    <li class="fragment fade-up">Compiling legacy Fortran code from scratch is notoriously difficult.</li>
+                    <li class="fragment fade-up">It requires compatibility between specific compiler versions (GNU <code>gfortran</code>, Intel <code>ifort</code>), MPI libraries, and specific builds of NetCDF and HDF5.</li>
+                    <li class="fragment fade-up">A single missing shared object library will instantly halt the build.</li>
+                    <li class="fragment fade-up">A single conflicting / mismatched shared object library can cause crashes at runtime.</li>
+                    <li class="fragment fade-up">This creates a major barrier to entry for reproducible scientific research.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 6 -->
+            <section>
+                <h2>Reproducibility</h2>
+                <ul>
+                    <li class="fragment fade-up">Reproducibility</li>
+                    <li class="fragment fade-up"><a href="https://www.intel.com/content/dam/develop/external/us/en/documents/pdf/fp-consistency-121918.pdf" target="_blank" class="small-text">https://www.intel.com/content/dam/develop/external/us/en/documents/pdf/fp-consistency-121918.pdf</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 7 -->
+            <section>
+                <h2>Our OSS Solution Today</h2>
+                <ul>
+                    <li class="fragment fade-up">We bypass dependency hell using <strong>Linux Containers / Linux Namespaces</strong>.</li>
+                    <li class="fragment fade-up">We'll use Docker to isolate the OS, compilers, libraries, and model binaries into a single portable image.</li>
+                    <li class="fragment fade-up">Alows running a high-resolution weather and air quality forecast over Pasadena, California, or any other location, entirely on our local machines.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 8 -->
+            <section>
+                <h2>Global Forcing: The Atmosphere Has No Borders</h2>
+                <ul>
+                    <li class="fragment fade-up">To run a regional model over California, we can't simulate in a vacuum.</li>
+                    <li class="fragment fade-up">The physics equations require starting values (initial conditions) and information about conditions on the edges of our map (boundary conditions).</li>
+                    <li class="fragment fade-up">We rely on open-data global models to feed our regional model.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 9 -->
+            <section>
+                <h2>The Operational Standard: UFS</h2>
+                <ul>
+                    <li class="fragment fade-up">When the public sees a forecast from the National Weather Service, it is often driven by the Unified Forecast System (UFS).</li>
+                    <li class="fragment fade-up">UFS is NOAA’s next-generation, community-based Earth system model.</li>
+                    <li class="fragment fade-up">It utilizes the Finite-Volume Cubed-Sphere (FV3) dynamical core to solve global fluid dynamics.</li>
+                    <li class="fragment fade-up"><a href="https://github.com/ufs-community/ufs-weather-model" target="_blank" class="small-text">https://github.com/ufs-community/ufs-weather-model</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 10 -->
+            <section>
+                <h2>Our Engine Today: NASA GEOS-5</h2>
+                <ul>
+                    <li class="fragment fade-up">While UFS is the operational weather standard, we are using NASA's GEOS-5 (Forward Processing) global forecast in this model.</li>
+                    <li class="fragment fade-up">It provides us with a high-fidelity global distribution of aerosols to feed our regional boundaries.</li>
+                    <li class="fragment fade-up">It also uses FV3</li>
+                    <li class="fragment fade-up">Data Products: <a href="https://portal.nccs.nasa.gov/datashare/gmao/geos-fp/forecast/" target="_blank" class="small-text">https://portal.nccs.nasa.gov/datashare/gmao/geos-fp/forecast/</a></li>
+                    <li class="fragment fade-up">Underlying CTM / GCM Software: <a href="https://github.com/GEOS-ESM/GEOSgcm" target="_blank" class="small-text">https://github.com/GEOS-ESM/GEOSgcm</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 11 -->
+            <section>
+                <h2>Downscaling with WRF-Chem</h2>
+                <ul>
+                    <li class="fragment fade-up">Global models like GEOS-5 give us the macro-scale circulation (typically ~25km or 12.5km resolution; 0.25 deg or 0.125 deg).</li>
+                    <li class="fragment fade-up">To get street-level, high-precision forecasts, we use the <strong>Weather Research and Forecasting model coupled with Chemistry (WRF-Chem)</strong>.</li>
+                    <li class="fragment fade-up">geos2wrf takes the global data and dynamically "downscales" it to localized, high-resolution grids.</li>
+                    <li class="fragment fade-up"><a href="https://web.archive.org/web/20210320170512/https://modelingguru.nasa.gov/docs/DOC-2242" target="_blank" class="small-text">https://modelingguru.nasa.gov/docs/DOC-2242</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 12 -->
+            <section>
+                <h2>Offline vs. Online Coupling</h2>
+                <ul>
+                    <li class="fragment fade-up">Historically, air quality was run "offline": A weather model runs, writes its output, and then a chemistry model reads that output to process kinetics.</li>
+                    <li class="fragment fade-up"><strong>Problem:</strong> No physical feedback.</li>
+                    <li class="fragment fade-up">WRF-Chem is "online-coupled." The weather and chemistry are solved simultaneously on the exact same computational grid.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 13 -->
+            <section>
+                <h2>The Power of Online Feedback</h2>
+                <ul>
+                    <li class="fragment fade-up">If a massive wildfire emits a dense smoke plume, WRF-Chem calculates the physical presence of the particulates.</li>
+                    <li class="fragment fade-up">The model's radiation physics see the smoke, calculate how it blocks sunlight, cools the surface, and changes the local wind patterns.</li>
+                    <li class="fragment fade-up">The changing wind then alters the path of the smoke.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 14 -->
+            <section>
+                <h2>Pasadena, CA example</h2>
+                <ul>
+                    <li class="fragment fade-up">We are configuring our model to focus on Pasadena, California (here!).</li>
+                    <li class="fragment fade-up">Interesting and complex coastal-mountain topography + pollution dynamics.</li>
+                    <li class="fragment fade-up">Pasadena is bordered by the Pacific Ocean to the west and "walled in" by the steep San Gabriel Mountains to the north and San Bernidino Mountains east.</li>
+                    <li class="fragment fade-up">Local weather pattern creates thermal inversions (warm air above trapping cooler air below) causing polluted air at the surface.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 15 -->
+            <section>
+                <h2>Modeling Smog</h2>
+                <ul>
+                    <li class="fragment fade-up">Daily solar heating generates a strong onshore sea breeze.</li>
+                    <li class="fragment fade-up">This wind sweeps vehicular and industrial emissions from the dense Los Angeles core directly inland.</li>
+                    <li class="fragment fade-up">The mountain ranges act as a barricade, causing Volatile Organic Compounds (VOCs) and Nitrogen Oxides (NOx) to get trapped and heat in sunlight to form Ozone (O3).</li>
+                </ul>
+            </section>
+
+            <!-- Slide 16 -->
+            <section>
+                <h2>Feeding the Model: Input Requirements</h2>
+                <p>Before WRF-Chem can simulate the future, it needs:</p>
+                <ul>
+                    <li class="fragment fade-up"><strong>1. Dynamic Data:</strong> 3D meteorological (Temp / RH / Precip) and aerosol boundary conditions.</li>
+                    <li class="fragment fade-up"><strong>2. Static Data:</strong> High-resolution geographical mapping to define the physical surface of the earth.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 17 -->
+            <section>
+                <h2>GEOS-FP Chemical Variables</h2>
+                <p>As an enhancement, we could add additional GEOS-FP aerosol information:</p>
+                <ul>
+                    <li class="fragment fade-up"><code>SO2</code> (Sulfur Dioxide)</li>
+                    <li class="fragment fade-up"><code>SO4</code> (Sulfate aerosols)</li>
+                    <li class="fragment fade-up"><code>BC</code> (Black Carbon)</li>
+                    <li class="fragment fade-up"><code>OC</code> (Organic Carbon)</li>
+                    <li class="fragment fade-up"><code>Dust</code> and <code>Sea Salt</code></li>                    
+                </ul>
+            </section>
+
+            <!-- Slide 18 -->
+            <section>
+                <h2>NetCDF: The Scientific Standard</h2>
+                <ul>
+                    <li class="fragment fade-up">NetCDF files are self-describing.</li>
+                    <li class="fragment fade-up">They contain internal metadata specifying map projections, variable descriptions, and scientific units (e.g. ug/kg or ppm)</li>
+                    <li class="fragment fade-up">CF-conventions: <a href="https://cfconventions.org/" target="_blank">https://cfconventions.org/</a></li>
+                    <li class="fragment fade-up">Binary files but lots of readers</li>
+                </ul>
+            </section>
+
+            <!-- Slide 19 -->
+            <section>
+                <h2>Static Terrestrial Datasets</h2>
+                <ul>
+                    <li class="fragment fade-up">The model must know how the ground behaves to calculate friction, heat retention, and moisture evaporation.</li>
+                    <li class="fragment fade-up">We use datasets from the USGS and the MODIS satellite to map terrain elevation, soil categories, and land-use classifications down to 500-meter resolutions.</li>
+                    <li class="fragment fade-up">Crucial for resolving Pasadena's varying microclimates.</li>
+                    <li class="fragment fade-up"><a href="https://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html" target="_blank" class="small-text">https://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 20 -->
+            <section>
+                <h2>The WRF Preprocessing System (WPS)</h2>
+                <ul>
+                    <li class="fragment fade-up">How do we combine NASA global data and satellite terrain data together?</li>
+                    <li class="fragment fade-up">We use a pipeline of programs called the WRF Preprocessing System (WPS).</li>
+                    <li class="fragment fade-up">They are all controlled by a single Fortran namelist file: <code>namelist.wps</code>.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 21 -->
+            <section>
+                <h2>Nested Grid Architectures</h2>
+                <ul>
+                    <li class="fragment fade-up">Regional models use nested grids to balance high resolution with computational cost.</li>
+                    <li class="fragment fade-up"><strong>Production Setup:</strong> A 36km domain for the Western US, a 12km domain for California, and a 4km domain over Los Angeles.</li>
+                    <li class="fragment fade-up">WRF Domain Wizard: <a href="https://jiririchter.github.io/WRFDomainWizard/" target="_blank" class="small-text">https://jiririchter.github.io/WRFDomainWizard/</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 22 -->
+            <section>
+                <h2>Example files: The "Toy" Grid</h2>
+                <ul>
+                    <li class="fragment fade-up">We will use a simplified "toy" configuration as our example.</li>
+                    <li class="fragment fade-up"><strong>Outer Domain:</strong> 12km grid.</li>
+                    <li class="fragment fade-up"><strong>Inner Domain:</strong> 4km grid tightly bounding Pasadena.</li>
+                    <li class="fragment fade-up">Center Coords: 34.144, -118.144</li>
+                    <li class="fragment fade-up">Computationally cheap, but demonstrates the nested architecture mechanics</li>
+                </ul>
+            </section>
+
+            <!-- Slide 23 -->
+            <section>
+                <h2>WPS Step 1: <code>geogrid.exe</code></h2>
+                <ul>
+                    <li class="fragment fade-up"><code>geogrid.exe</code> defines the physical geometry of our simulation domain.</li>
+                    <li class="fragment fade-up">It reads <code>namelist.wps</code> for our map projection, center coordinates, and grid spacing (dx, dy).</li>
+                    <li class="fragment fade-up">It extracts the static MODIS/USGS data and interpolates it onto our specific mesh.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 24 -->
+            <section>
+                <h2>WPS Step 2: <code>geos2wrf</code></h2>
+                <ul>
+                    <li class="fragment fade-up">Global models like GEOS-5 package their data in netCDF.</li>
+                    <li class="fragment fade-up"><code>runGeos2Wrf.sh</code> unpacks the netCDF fields into that metgrid format.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 25 -->
+            <section>
+                <h2>WPS Step 3: <code>metgrid.exe</code></h2>
+                <ul>
+                    <li class="fragment fade-up">The final preprocessing step bridges the static map with the dynamic weather.</li>
+                    <li class="fragment fade-up"><code>metgrid.exe</code> ingests the static grids from <code>geogrid</code> and the time-stamped weather from <code>geos2wrf</code>.</li>
+                    <li class="fragment fade-up">It horizontally interpolates the coarse global data perfectly onto our high-resolution 12km/4km nested grids.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 26 -->
+            <section>
+                <h2>Initializing the Atmosphere</h2>
+                <ul>
+                    <li class="fragment fade-up">Moving from WPS to WRF-Chem begins with <code>real.exe</code>.</li>
+                    <li class="fragment fade-up"><code>real.exe</code> takes our horizontal data and interpolates it vertically across desired number of hydrostatic pressure layers (or levels) up to the stratosphere.</li>
+                    <li class="fragment fade-up">It generates our final <code>wrfinput</code> (initial state) and <code>wrfbdy</code> (boundary conditions) files.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 27 -->
+            <section>
+                <h2>The Control Panel: <code>namelist.input</code></h2>
+                <ul>
+                    <li class="fragment fade-up">The entire numerical execution of WRF-Chem is dictated by a massive configuration file called <code>namelist.input</code>.</li>
+                    <li class="fragment fade-up">It controls time integration steps, spatial dimensions, physics parameterizations, and chemical kinetics.</li>
+                    <li class="fragment fade-up"><a href="https://github.com/wrf-model/WRF/blob/master/run/README.namelist" target="_blank" class="small-text">https://github.com/wrf-model/WRF/blob/master/run/README.namelist</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 28 -->
+            <section>
+                <h2>Configuring Chemistry</h2>
+                <ul>
+                    <li class="fragment fade-up">For air quality, the <code>&chem</code> record is vital. The <code>chem_opt</code> parameter determines our chemical mechanism.</li>
+                    <li class="fragment fade-up"><code>chem_opt = 0</code>: Standard weather forecasting (chemistry disabled).</li>
+                    <li class="fragment fade-up"><code>chem_opt = 300</code>: GOCART only (bulk aerosols, computationally fast).</li>
+                    <li class="fragment fade-up">Goddard Chemistry Aerosol Radiation and Transport (GOCART)</li>
+                </ul>
+            </section>
+
+            <!-- Slide 29 -->
+            <section>
+                <h2>MOZART + GOCART for Ozone</h2>
+                <ul>
+                    <li class="fragment fade-up">For our Pasadena example, we utilize a pairing of MOZART and GOCART (<code>chem_opt = 112</code>).</li>
+                    <li class="fragment fade-up">Combines GOCART with Model for Ozone and Related chemical Tracers (MOZART)</li>
+                </ul>
+            </section>
+
+            <!-- Slide 30 -->
+            <section>
+                <h2>Containerizing the Workflow</h2>
+                <ul>
+                    <li class="fragment fade-up">Executing this natively requires compiling many packages of Fortran and C code, linking compatible libraries, and choosing MPI paths.</li>
+                    <li class="fragment fade-up"><a href="https://github.com/UoMResearchIT/wrf-docker/pkgs/container/wrf-wps" target="_blank" class="small-text">WPS Container</a></li>
+                    <li class="fragment fade-up"><a href="https://github.com/sval-dev/wrf-docker/pkgs/container/wrf-wps" target="_blank" class="small-text">WPS with geos2wrf Container</a></li>
+                    <li class="fragment fade-up"><a href="https://github.com/UoMResearchIT/wrf-docker/pkgs/container/wrf-chem" target="_blank" class="small-text">WRF-Chem Container</a></li>
+                    <li class="fragment fade-up"><a href="https://github.com/uomresearchit/wrf-software-libraries-docker/pkgs/container/wrf-libraries" target="_blank" class="small-text">Dev environment Container</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 31 -->
+            <section>
+                <h2>Executing with Docker Bind Mounts</h2>
+                <ul>
+                    <li class="fragment fade-up">Containers are isolated. How do we get our GEOS-FP input files in and our output netCDF files out?</li>
+                    <li class="fragment fade-up">We launch Docker using Volume Bind Mounts:<br><code>-v /local/host/data:/wrf/data</code></li>
+                    <li class="fragment fade-up">The container reads/writes directly to the host's volume, ensuring our output persists after the container exits.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 32 -->
+            <section>
+                <h2>Launching the Container</h2>
+                <pre><code class="language-bash" data-trim>
+# Launching the WPS environment
+docker run --rm -it --name wps_pasadena -v $(pwd)/data:/wrf/data ghcr.io/sval-dev/wrf-wps:4.3.1 /bin/bash
+
+# Launching the WRF-Chem environment
+docker run --rm -it --name wrf_pasadena -v $(pwd)/data:/wrf/data ghcr.io/uomresearchit/wrf-chem:4.3.3 /bin/bash
+                </code></pre>
+            </section>
+
+            <!-- Slide 33 -->
+            <section>
+                <h2>High-Performance Computing: MPI</h2>
+                <ul>
+                    <li class="fragment fade-up">Simulating fluid dynamics and complex photochemistry simultaneously is computationally heavy.</li>
+                    <li class="fragment fade-up">WRF-Chem achieves speed through domain decomposition.</li>
+                    <li class="fragment fade-up">The map is sliced into rectangular tiles (patches). Each tile is assigned to an individual CPU core.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 34 -->
+            <section>
+                <h2>Patch Flow</h2>
+                <ul>
+                    <li class="fragment fade-up">The atmosphere is a continuous fluid so tiles must constantly talk to each other.</li>
+                    <li class="fragment fade-up">At every time step, WRF-Chem exchanges wind, heat, and chemical fluxes across the outer boundaries of each patch.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 35 -->
+            <section>
+                <h2>Executing the Simulation</h2>
+                <pre><code class="language-bash" data-trim>
+# Executing WRF-Chem across 8 CPU cores using MPI
+cd /wrf/data
+mpirun -np 8 /WPS-run/geogrid.exe
+mpirun -np 8 /WPS-run/metgrid.exe
+/geos2wrf_merra2wrf/scripts/G5.7.2/runGeos2Wrf.sh
+mpirun -np 8 /usr/local/bin/real.exe
+mpirun -np 8 /usr/local/bin/wrf.exe
+                </code></pre>
+            </section>
+
+            <!-- Slide 36 -->
+            <section>
+                <h2>The Output: NetCDF</h2>
+                <ul>
+                    <li class="fragment fade-up">WRF-Chem writes its results in the Network Common Data Form (<strong>netCDF</strong>) format.</li>
+                    <li class="fragment fade-up">It generates files containing 4-Dimensional arrays:</li>
+                    <li class="fragment fade-up">Longitude (x)</li>
+                    <li class="fragment fade-up">Latitude (y)</li>
+                    <li class="fragment fade-up">Vertical Pressure Levels (z)</li>
+                    <li class="fragment fade-up">Time (t)</li>
+                </ul>
+            </section>
+
+            <!-- Slide 37 -->
+            <section>
+                <h2>Rapid Prototyping: <code>ncview</code></h2>
+                <ul>
+                    <li class="fragment fade-up"><code>ncview</code> is a lightweight, X11-based visual browser.</li>
+                    <li class="fragment fade-up"><a href="https://cirrus.ucsd.edu/ncview/" target="_blank">https://cirrus.ucsd.edu/ncview/</a></li>
+                </ul>
+                <pre class="fragment fade-up"><code class="language-bash" data-trim>
+# Launching ncview on our completed forecast file
+ncview wrfout_d02_2026-03-06_18:00:00
+                </code></pre>
+            </section>
+
+            <!-- Slide 38 -->
+            <section>
+                <h2>High-Fidelity Mapping: NASA Panoply</h2>
+                <ul>
+                    <li class="fragment fade-up"><strong>Panoply</strong> is a cross-platform Java GUI developed by NASA Goddard Institute for Space Studies (GISS).</li>
+                    <li class="fragment fade-up">Panoply is good at slicing 3D/4D arrays into 2D contours and overlaying high-resolution continent outlines and state borders.</li>
+                    <li class="fragment fade-up"><a href="https://www.giss.nasa.gov/tools/panoply/download/" target="_blank" class="small-text">https://www.giss.nasa.gov/tools/panoply/download/</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 39 -->
+            <section>
+                <h2>Programmatic Analysis: Python</h2>
+                <ul>
+                    <li class="fragment fade-up">For actual analytics, we can use Python.</li>
+                    <li class="fragment fade-up">netCDF4 module in PyPI</li>
+                    <li class="fragment fade-up"><code>xarray</code> provides convenient manipulation for multi-dimensional netCDF arrays.</li>
+                    <li class="fragment fade-up"><code>wrf-python</code> provides higher level routines for extracting particular pressure levels and calculating derived meteorological variables.</li>
+                    <li class="fragment fade-up"><a href="https://wrf-python.readthedocs.io/en/latest/" target="_blank">https://wrf-python.readthedocs.io/en/latest/</a></li>
+                </ul>
+            </section>
+
+            <!-- Slide 40 -->
+            <section>
+                <h2>Democratizing Atmospheric Science</h2>
+                <ul>
+                    <li class="fragment fade-up">Historically, this level of modeling was restricted to massive institutional supercomputers.</li>
+                    <li class="fragment fade-up">Today, through the convergence of Linux, open-source Fortran/C code, and containerization via Docker, the barrier to entry has been substantially lowered.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 41 -->
+            <section>
+                <h2>Reproducible research</h2>
+                <ul>
+                    <li class="fragment fade-up">By standardizing inputs (GEOS-5), containerizing the environment (Docker), and scripting the outputs (Python/xarray), your research becomes more reproducible.</li>
+                    <li class="fragment fade-up">You can push your docker image and inputs to a peer, and they can replicate your atmospheric forecast.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 42 -->
+            <section>
+                <h2>Summary</h2>
+                <ol>
+                    <li class="fragment fade-up"><strong>Inputs:</strong> GEOS-5 Global Data + MODIS Terrestrial Maps</li>
+                    <li class="fragment fade-up"><strong>Pre-Processing:</strong> WPS (<code>geogrid</code>, <code>geos2wrf</code>, <code>metgrid</code>)</li>
+                    <li class="fragment fade-up"><strong>Simulation:</strong> WRF-Chem (<code>real.exe</code> and <code>wrf.exe</code>)</li>
+                    <li class="fragment fade-up"><strong>Analysis:</strong> NetCDF via <code>ncview</code>, Panoply, and Python</li>
+                </ol>
+            </section>
+
+            <!-- Slide 43 -->
+            <section>
+                <h2 style="font-size: 1.3em;">The future: AI Foundation Models for Weather & Climate</h2>
+                <p style="font-size: 0.6em; margin-bottom: 20px;">From a <a href="https://www.noaa.gov/news-release/noaa-deploys-new-generation-of-ai-driven-global-weather-models" target="_blank">NOAA News Release</a>:<br>The new suite of AI weather models includes three distinct applications:</p>
+                <ul>
+                    <li class="fragment fade-up" style="font-size: 0.5em;"><strong>AIGFS</strong> (Artificial Intelligence Global Forecast System): A weather forecast model that implements AI to deliver improved weather forecasts more quickly and efficiently (using up to 99.7% less computing resources) than its traditional counterpart.</li>
+                    <li class="fragment fade-up" style="font-size: 0.5em;"><strong>AIGEFS</strong> (Artificial Intelligence Global Ensemble Forecast System): An AI-based ensemble system that provides a range of probable forecast outcomes to meteorologists and decision-makers. Early results show improved performance over the traditional GEFS, extending forecast skill by an additional 18 to 24 hours.</li>
+                    <li class="fragment fade-up" style="font-size: 0.5em;"><strong>HGEFS</strong> (Hybrid-GEFS): A pioneering, hybrid "grand ensemble" that combines the new AI-based AIGEFS (above) with NOAA’s flagship ensemble model, the Global Ensemble Forecast System. Initial testing shows that this model, a first-of-its kind approach for an operational weather center, consistently outperforms both the AI-only and physics-only ensemble systems.</li>
+                </ul>
+            </section>
+
+            <!-- Slide 44 -->
+            <section>
+                <h2>Get Involved</h2>
+                <ul>
+                    <li class="fragment fade-up">The software is free. The global satellite data is free.</li>
+                    <li class="fragment fade-up">Run it on your laptop, push it to AWS, or deploy it on an HPC cluster.</li>
+                    <li class="fragment fade-up">Start forecasting the air quality in your own backyard!</li>
+                </ul>
+            </section>
+
+            <!-- Slide 45 -->
+            <section data-transition="zoom">
+                <h2>Questions?</h2>
+                <ul>
+                    <li><strong>GitHub:</strong> <a href="https://github.com/sval-dev/wrf-docker" target="_blank">github.com/sval-dev/wrf-docker</a></li>
+                    <li>Presentation slides and Dockerfiles are available in the repo.</li>
+                </ul>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Reveal.js Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: 'c/t', // Shows current/total slide number
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+            plugins: [ RevealHighlight ]
+        });
+    </script>
+</body>
+</html>
